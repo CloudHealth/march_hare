@@ -2,6 +2,7 @@
 
 module JavaConcurrent
   java_import 'java.lang.Thread'
+  java_import 'java.lang.Runnable'
   java_import 'java.lang.InterruptedException'
   java_import 'java.util.concurrent.Executors'
   java_import 'java.util.concurrent.LinkedBlockingQueue'
@@ -203,12 +204,13 @@ module HotBunnies
       def initialize(channel, callback, executor)
         super(channel, callback)
         @executor = executor
+        @executor_submit = executor.java_method(:submit, [JavaConcurrent::Runnable.java_class])
         @tasks = []
       end
 
       def deliver(headers, message)
         unless @executor.shutdown?
-          @executor.submit do
+          @executor_submit.call do
             callback(headers, message)
           end
         end
